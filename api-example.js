@@ -55,10 +55,12 @@ app.post('/users', (req, res, next) => {
 
 // Log-in end-point
 app.post('/logins', (req, res, next) => {
-    const { email, password } = req.body
-    userRepository.findByEmail(email)
+    if (!req.body.email || !req.body.password) {
+        return res.status(400).send('An email and password are required')
+    }
+    userRepository.findByEmail(req.body.email)
         .then(dbUser => {
-            if (dbUser && bcrypt.compareSync(password, dbUser.password)) {
+            if (dbUser && bcrypt.compareSync(req.body.password, dbUser.password)) {
                 const token = jwt.sign({ id: dbUser.id }, secretKey)
                 res.send({ token })
             } else {
